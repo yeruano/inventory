@@ -1,0 +1,8 @@
+steps:
+  - task: codeAnalysis@5
+    displayName: 'Closure of vulnerabilities'
+    inputs:
+      proyect_name: Soroca
+      token: $(token_devsecops_engine)
+      repoName: $(Build.Repository.Name)/$(Artifact.Name)
+      test: static

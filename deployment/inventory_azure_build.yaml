@@ -1,0 +1,54 @@
+name: $(Build.SourceBranchName).$(date:yyyyMMdd)$(rev:.r)
+
+variables:
+  - group: DevSecOps_Engine
+  - name: 'Artifactory.Repository'
+    value: 'build-NU0212_SucursalVirtualNegocios'
+  - name: 'Artifact.Name'
+    value: 'ch_ms_enrollment'
+  - name: 'Gradle_version'
+    value: '7.6.1'
+
+resources:
+  - repo: self
+    clean: true
+
+trigger:
+  branches:
+    include:
+      - trunk
+  paths:
+    include:
+      - $(System.DefaultWorkingDirectory)/$(Artifact.Name)/*
+
+stages:
+- stage: build
+  jobs:
+    - job: build
+      displayName: 'Build and unit tests'
+      pool:
+        name: Build
+        demands:
+          - java
+          - JAVA_HOME_17_X64
+      steps:
+        - template: pipelines/gradle_wrapper.yaml
+        - template: pipelines/build.yaml
+
+#    - job: deploy
+#      displayName: 'Build and publish artifact'
+#      pool:
+#        name: Build
+#        demands:
+#          - java
+#          - JAVA_HOME_17_X64
+#      steps:
+#        - template: pipelines/gradle_wrapper.yaml
+#        - template: pipelines/deploy.yaml
+#
+#    - job: security
+#      displayName: Vulnerability scan
+#      pool:
+#        name: DevSecOps-Engine
+#      steps:
+#        - template: pipelines/security.yaml

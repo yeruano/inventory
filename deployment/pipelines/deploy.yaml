@@ -1,0 +1,75 @@
+steps:
+  - task: Gradle@3
+    displayName: 'Gradle build'
+    inputs:
+      workingDirectory: '$(Artifact.Name)'
+      gradleWrapperFile: '$(Artifact.Name)/gradlew'
+      tasks: 'clean build -x test --stacktrace'
+      publishJUnitResults: false
+      sonarQubeRunAnalysis: false
+    env:
+      JAVA_HOME: $(JAVA_HOME_17_X64)
+
+  - task: CopyFiles@2
+    displayName: 'Copy jar file'
+    inputs:
+      SourceFolder: $(System.DefaultWorkingDirectory)/$(Artifact.Name)/applications/app-service/build/libs/
+      TargetFolder: $(Build.ArtifactStagingDirectory)/$(Artifact.Name)/artifact
+
+  - task: CopyFiles@2
+    displayName: 'Copy configmap file'
+    inputs:
+      SourceFolder: $(System.DefaultWorkingDirectory)/$(Artifact.Name)/deployment/infraestructure
+      TargetFolder: $(Build.ArtifactStagingDirectory)/$(Artifact.Name)/artifact
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact'
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/$(Artifact.Name)/artifact
+      ArtifactName: Artifact
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: acceptance-test'
+    inputs:
+      PathtoPublish: $(System.DefaultWorkingDirectory)/$(Artifact.Name)/Test/acceptance-test
+      ArtifactName: Acceptance-test
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: JMeter'
+    inputs:
+      PathtoPublish: $(System.DefaultWorkingDirectory)/$(Artifact.Name)/Test/performance-test
+      ArtifactName: Performance-test
+    condition: succeeded()
+
+  #Artifactory
+
+  - task: ArchiveFiles@2
+    displayName: 'Compress artifact'
+    inputs:
+      rootFolderOrFile: $(Build.ArtifactStagingDirectory)/$(Artifact.Name)/artifact
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Artifactory.Repository)/$(Artifact.Name).zip'
+
+  - task: ArtifactoryGenericUpload@2
+    displayName: 'Artifactory configuration Upload'
+    inputs:
+      artifactoryService: Artifactory
+      fileSpec: |
+        {
+          "files": [
+            {
+              "pattern": "$(Build.ArtifactStagingDirectory)/$(Artifactory.Repository)/$(Artifact.Name).zip",
+              "target": "$(Artifactory.Repository)/$(Build.Repository.Name)/$(Build.BuildNumber)/"
+            }
+          ]
+        }
+      collectBuildInfo: true
+      includeEnvVars: true
+
+  - script: |
+      rm -r $(Build.SourcesDirectory)/$(Artifact.Name)/gradle-$(Gradle_version)
+      rm -f $(Build.SourcesDirectory)/$(Artifact.Name)/gradle-$(Gradle_version)-bin.zip
+    displayName: 'Delete Gradle Wrapper Folder'

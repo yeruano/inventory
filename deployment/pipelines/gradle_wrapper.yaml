@@ -1,0 +1,26 @@
+steps:
+  - script: |
+      wget https://artifactory.apps.bancolombia.com/gradlew/gradle-$(Gradle_version)-bin.zip
+    workingDirectory: $(Artifact.Name)
+    displayName: 'Download Gradle $(Gradle_version)'
+
+  - task: ExtractFiles@1
+    inputs:
+      archiveFilePatterns: $(Build.SourcesDirectory)/$(Artifact.Name)/gradle-$(Gradle_version)-bin.zip
+      destinationFolder: $(Build.SourcesDirectory)/$(Artifact.Name)
+      cleanDestinationFolder: false
+      overwriteExistingFiles: false
+    displayName: 'Extract Gradle Files'
+
+  - script: |
+      chmod +x gradle-$(Gradle_version)/bin/gradle
+      ./gradle-$(Gradle_version)/bin/gradle wrapper --gradle-version $(Gradle_version)
+    env:
+      JAVA_HOME: $(JAVA_HOME_17_X64)
+      PATH: $(JAVA_HOME_17_X64)/bin;$(PATH)
+    workingDirectory: $(Artifact.Name)
+    displayName: 'Generate gradle wrapper'
+
+  - script: |
+      echo "org.gradle.caching=true" >> $(Build.SourcesDirectory)/$(Artifact.Name)/gradle.properties
+    displayName: 'Enable Gradle caching'
