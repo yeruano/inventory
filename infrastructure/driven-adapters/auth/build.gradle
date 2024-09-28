@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':commons')
+    implementation project(':r2dbc-postgresql')
+    implementation 'org.springframework:spring-context'
+}

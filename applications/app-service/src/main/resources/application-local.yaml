@@ -1,0 +1,50 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: "inventory_management"
+  devtools:
+    add-properties: false
+    profiles:
+      active: ${ENV:local}
+  security:
+    user:
+      name: user
+      password: password
+
+entries:
+  reactive-web:
+    brands: /brands
+    suppliers: /suppliers
+    products: /products
+    installments: /installments
+    purchaseInvoice: /purchase-invoice
+    roles: /roles
+    authentication: /auth
+    users: /users
+    manageAccountInformation:
+      changePassword: /manage-account-information/change-password
+
+adapters:
+  postgresql:
+    dbname: postgres
+    username: postgres
+    password: kaiser
+    host: localhost
+    port: 5432
+    pool:
+      initialSize: ${POSTGRES_POOL_INITIAL_SIZE:12}
+      maxSize: ${POSTGRES_POOL_MAX_SIZE:15}
+      maxIdleTime: ${POSTGRES_POOL_MAX_IDLE_TIME:30}
+    schema: ${POSTGRES_SCHEMA:public}
+    sslMode: ${POSTGRES_SSL_MODE:disable}
+
+security:
+  jwt:
+    secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    expiration: 3600000
+    refresh-token:
+      expiration: 3600000
+
+error-status-mapper:
+  default-status: 500

@@ -1,0 +1,46 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: "inventory_management"
+  devtools:
+    add-properties: false
+    profiles:
+      active: ${ENV:local}
+
+entries:
+  reactive-web:
+    brands: /brands
+    brandsById: /brands/{brandId}
+    suppliers: /suppliers
+    suppliersById: /suppliers/{supplierId}
+
+secrets:
+  postgresql: ${SECRET_NAME_POSTGRES}
+adapters:
+  postgresql:
+    pool:
+      initialSize: ${POSTGRES_POOL_INITIAL_SIZE}
+      maxSize: ${POSTGRES_POOL_MAX_SIZE}
+      maxIdleTime: ${POSTGRES_POOL_MAX_IDLE_TIME}
+    schema: ${POSTGRES_SCHEMA}
+    sslMode: ${POSTGRES_SSL_MODE}
+  secrets-manager:
+    region: ${APP_REGION}
+    endpoint: ${SECRET_ENDPOINT}
+    cacheSize: ${CACHE_SECRETS_SIZE}
+    cacheTime: ${CACHE_SECRETS_SECONDS}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+error-status-mapper:
+  default-status: 500
